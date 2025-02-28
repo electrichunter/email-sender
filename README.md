@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Email Gönderim Sistemi
 
-## Getting Started
+Bu proje, React.js (Frontend), Next.js (Backend), Nodemailer (SMTP entegrasyonu) ve BullMQ (Job Queue) kullanarak **otomatik e-posta gönderim sistemi** oluşturmak için geliştirilmiştir. Docker kullanarak Redis kurulumu yapılmıştır. 
 
-First, run the development server:
+## 🚀 Özellikler
+- Birden fazla e-posta adresine aynı anda gönderim.
+- Gönderilecek e-postaların işlenmesi için **BullMQ** ile Job Queue kullanımı.
+- **Nodemailer** ile SMTP entegrasyonu (Gmail destekli).
+- `src/data/emailData.tsx` dosyasından email verilerini alma.
 
+---
+
+## 🔧 Gereksinimler
+- Node.js (v18.x ve üzeri)
+- Docker (Redis için)
+- Gmail hesabı ve **Uygulama Şifresi**
+
+---
+
+## ⚙️ Kurulum ve Çalıştırma
+1. **Depoyu klonla**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/kullaniciadi/email-sender.git
+cd email-sender
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Gerekli paketleri yükle**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Docker ile Redis'i başlat**
+```bash
+docker run -d --name redis-email-sender -p 6379:6379 redis
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **.env Dosyasını Yapılandır**
+`.env` dosyasını ana dizine ekleyip şu şekilde doldur:
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seninmail@gmail.com
+SMTP_PASSWORD=uygulama-sifresi-buraya
+```
 
-## Learn More
+> 📌 **Not:** Gmail hesabında **2 Adımlı Doğrulama** aktif olmalıdır ve **Uygulama Şifresi** kullanılmalıdır. [Nasıl alınır?](https://support.google.com/mail/answer/185833)
 
-To learn more about Next.js, take a look at the following resources:
+5. **Projeyi Çalıştır**
+- **Backend (Next.js) Çalıştır**
+```bash
+npm run dev
+```
+- **Job Queue (Worker) Başlat**
+```bash
+npm run worker
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Proje Yapısı
+```
+📁 src
+├── app
+│   └── api
+│       └── send-email
+│           └── route.ts
+├── data
+│   └── emailData.tsx
+└── lib
+    └── queue.ts
+```
 
-## Deploy on Vercel
+- **`emailData.tsx`**: Gönderilecek e-posta verilerini içerir.
+- **`queue.ts`**: BullMQ ile job queue işlemlerini yönetir.
+- **`route.ts`**: Next.js API Route, e-posta gönderim isteklerini alır.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📧 Gmail SMTP Ayarları
+Gmail'de doğrudan şifre yerine **uygulama şifresi** kullanılmalıdır.
+- [Google Hesabı](https://myaccount.google.com) → **Güvenlik** → **2 Adımlı Doğrulama**
+- **Uygulama Şifreleri** kısmından yeni bir şifre oluştur ve `.env` dosyasına ekle.
+
+> Eğer hâlâ sorun yaşıyorsanız, `SMTP_PORT` olarak `465` ve `SMTP_SECURE=true` deneyebilirsiniz.
+
+---
+
+## ❗️ Olası Hatalar ve Çözümleri
+- **Invalid login: 535-5.7.8 Username and Password not accepted.**
+    - Uygulama şifresini doğru girdiğinden emin ol.
+    - Gmail'den şüpheli giriş denemelerini kontrol et ve "Bendim" diyerek onayla.
+
+- **Redis Bağlantı Hatası**
+    - Redis'in doğru çalışıp çalışmadığını kontrol et:
+    ```bash
+    docker ps
+    ```
+    - Eğer çalışmıyorsa yeniden başlat:
+    ```bash
+    docker start redis-email-sender
+    ```
+
+---
+
+## 🤝 Katkıda Bulunma
+1. **Fork** edip kendi deposuna kopyala.
+2. Yeni bir özellik için **branch** oluştur: `git checkout -b feature/yeni-ozellik`
+3. **Commit** yap: `git commit -m 'Yeni özellik eklendi'`
+4. **Push** et: `git push origin feature/yeni-ozellik`
+5. **Pull Request** gönder.
+
+---
+
+## 📄 Lisans
+Bu proje MIT Lisansı ile lisanslanmıştır.
+
+---
+
+## 📞 İletişim
+- **Geliştirici:** Ömer Faruk Uysal
+- **E-posta:** ouysal155@gmail.com
+- **GitHub:** [electrichunter](https://github.com/electrichunter)
+
+---
+
+Bu projeyi kullanarak katkıda bulunmak ve geliştirmeler yapmak serbesttir. Yıldızlayarak destek olmayı unutmayın! ⭐
